@@ -1,7 +1,6 @@
 import './App.css'
 import { useState } from 'react';
 
-
 function TransactionsList({transactions}) {
     const listTrans = transactions.map(trans =>
         <li key={trans.id} style={{color: trans.mode === "debited" ? 'red': 'green'}}
@@ -20,7 +19,9 @@ export default function AddTrans() {
     const [amount, setAmount] = useState('')
     const [date, setDate] = useState('')
     const [type, setType] = useState('debited')
-
+    const income = transactions.filter((transaction)=>transaction.mode === 'credited').reduce((total, transactions)=>total+transactions.amount, 0)
+    const expenses = transactions.filter((transaction)=>transaction.mode === 'debited').reduce((total, transaction)=>total+transaction.amount, 0)
+    const balance = income - expenses
     function handleSubmit(e) {
         e.preventDefault()
         const newTransaction = {
@@ -36,6 +37,7 @@ export default function AddTrans() {
 
         setAmount('')
         setDate('')
+        
     }
     return (
         <>
@@ -48,6 +50,11 @@ export default function AddTrans() {
             </select>
             <button type="submit">submit</button>
         </form>
+        <section>
+            <p>Income: {income}</p>
+            <p>Expenses: {expenses}</p>
+            <p>Balance: {balance}</p>
+        </section>
         <TransactionsList transactions={transactions} />
         </>
     );
