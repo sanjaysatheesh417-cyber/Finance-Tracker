@@ -1,6 +1,7 @@
 import './App.css'
 import { useState } from 'react';
 
+let nextId = 3;
 function TransactionsList({transactions}) {
     const listTrans = transactions.map(trans =>
         <li key={trans.id} style={{color: trans.mode === "debited" ? 'red': 'green'}}
@@ -14,18 +15,35 @@ function TransactionsList({transactions}) {
     );
 }
 
+
 export default function AddTrans() {
     const [transactions, setTransactions] = useState([])
     const [amount, setAmount] = useState('')
     const [date, setDate] = useState('')
     const [type, setType] = useState('debited')
-    const income = transactions.filter((transaction)=>transaction.mode === 'credited').reduce((total, transactions)=>total+transactions.amount, 0)
+    const [error, setError] = useState(null)
+    const [filterType, setFilterType] = useState('all')
+    const income = transactions.filter((transaction)=>transaction.mode === 'credited').reduce((total, transaction)=>total+transaction.amount, 0)
     const expenses = transactions.filter((transaction)=>transaction.mode === 'debited').reduce((total, transaction)=>total+transaction.amount, 0)
     const balance = income - expenses
+    const visibleTransactions = transactions.filter((transaction)=>filterType === "all" || transaction.mode === filterType)
+
     function handleSubmit(e) {
         e.preventDefault()
+        setError(null)
+
+        const parsedAmount = Number(amount)
+        if (!amount.trim() || !Number.isFinite(parsedAmount) || parsedAmount<=0) {
+            setError('enter an amount greater than zero.')
+            return
+        }
+        if (!date) {
+            setError('choose a date')
+            return
+        }
+
         const newTransaction = {
-            id: crypto.randomUUID(),
+            id: nextId++,
             amount: Number(amount),
             date,
             mode: type,
@@ -49,13 +67,19 @@ export default function AddTrans() {
                 <option value="credited">Income</option>
             </select>
             <button type="submit">submit</button>
+            {error && <p className='Error' role='alert'>{error}</p>}
         </form>
-        <section>
+        <div>
             <p>Income: {income}</p>
             <p>Expenses: {expenses}</p>
             <p>Balance: {balance}</p>
-        </section>
-        <TransactionsList transactions={transactions} />
+        </div>
+        <select value={filterType} onChange={e => setFilterType(e.target.value)}>
+            <option value="all">All</option>
+            <option value="debited">Expense</option>
+            <option value="credited">Income</option>
+        </select>
+        <TransactionsList transactions={visibleTransactions}/>
         </>
     );
 }
