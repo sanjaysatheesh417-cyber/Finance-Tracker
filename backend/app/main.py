@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+app = FastAPI(
+    title="Finance Tracker",
+)
 
 @app.get("/health")
 def health():
