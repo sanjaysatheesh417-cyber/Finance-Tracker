@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime, date
-from models import Mode
+from .models import Mode
 from decimal import Decimal
 
 class TransactionBase(BaseModel):
