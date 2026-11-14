@@ -1,12 +1,15 @@
 import { useState } from "react"
+import { createTransaction } from "../api/transactions"
 
 export function TransactionForm({onAdd}) {
     const [amount, setAmount] = useState('')
     const [date, setDate] = useState('')
     const [type, setType] = useState('debited')
+    const [description, setDescription] = useState("")
     const [error, setError] = useState(null)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
         e.preventDefault()
         setError(null)
 
@@ -20,28 +23,42 @@ export function TransactionForm({onAdd}) {
             return
         }
 
-        const newTransaction = {
-            id: crypto.randomUUID(),
+        const transactionData = {
             amount: parsedAmount,
-            date,
+            transaction_date: date,
             mode: type,
+            description: description.trim() || null
         }
 
-        onAdd(newTransaction)
-        setAmount('')
-        setDate('')
-        
+        setIsSubmitting(true);
+
+        try{
+            const savedTransaction = await createTransaction(transactionData);
+            onAdd(savedTransaction)
+            setAmount('')
+            setDate('')
+            setType('debited')
+        } catch (error) {
+            setError(
+                error instanceof Error ? error.message: 'could not save the transaction.'
+            )
+        } finally {
+            setIsSubmitting(false)
+        }
     }
     return (
         <>
         <form onSubmit={handleSubmit}>
-            <input type='number' placeholder='amount' value={amount} onChange={e => setAmount(e.target.value)}/>
-            <input type='date' placeholder='date' value={date} onChange={e => setDate(e.target.value)}/>
+            <input type='number' min="0.01" step="0.01" placeholder='amount' value={amount} onChange={e => setAmount(e.target.value)} required/>
+            <input type='date' value={date} onChange={e => setDate(e.target.value)} required/>
             <select value={type} onChange={e => setType(e.target.value)}>
                 <option value="debited">Expense</option>
                 <option value="credited">Income</option>
             </select>
-            <button type="submit">submit</button>
+            <textarea value={description} onChange={e=> setDescription(e.target.value)} placeholder="Description (optional)"/>
+            <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving....' : 'Submit'}    
+            </button>
             {error && <p className='Error' role='alert'>{error}</p>}
         </form>
         </>

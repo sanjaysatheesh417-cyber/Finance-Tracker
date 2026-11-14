@@ -1,11 +1,45 @@
 import './App.css'
 import { useState } from 'react';
+import { useEffect } from 'react';
+import { getTransactions } from './api/transactions';
 import {TransactionsList} from './components/TransactionList';
 import { TransactionForm } from './components/TransactionForm';
 
 export default function App() {
     const [transactions, setTransaction] = useState([])
     const [filterType, setFilterType] = useState("all")
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState("")
+
+    useEffect(() => {
+        let ignoreResult = false
+
+        async function loadTransactions() {
+            try {
+                const data = await getTransactions()
+                
+                if (!ignoreResult) {
+                    setTransaction(data)
+                }
+            } catch (error) {
+                if (!ignoreResult) {
+                    setLoadError(
+                    error instanceof Error ? error.message: "could not load transactions"
+                )
+                }
+            } finally {
+                if (!ignoreResult) {
+                    setLoading(false)
+                }
+            }
+        }
+        loadTransactions()
+
+        return ()=>{
+            ignoreResult = true;
+        }
+    }, [])
+
     const income = transactions.filter((transaction)=>transaction.mode === 'credited').reduce((total, transaction)=>total+transaction.amount, 0)
     const expenses = transactions.filter((transaction)=>transaction.mode === 'debited').reduce((total, transaction)=>total+transaction.amount, 0)
     const balance = income - expenses
@@ -19,6 +53,7 @@ export default function App() {
     return (
         <>
         <TransactionForm onAdd={handleAdd}/>
+        
         <section>
             <p>Income: {income}</p>
             <p>Expenses: {expenses}</p>
@@ -29,8 +64,11 @@ export default function App() {
             <option value="debited">Expense</option>
             <option value="credited">Income</option>
         </select>
-
-        <TransactionsList transactions={visibleTransactions}/>
+        {loadError && <p role='alert'>{loadError}</p>}
+        {loading ? (
+            <p>Loading transactions.....</p>
+        ): (<TransactionsList transactions={visibleTransactions}/>)}
         </>
     )
 }
+

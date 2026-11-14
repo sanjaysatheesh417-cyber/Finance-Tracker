@@ -1,10 +1,42 @@
 const API_BASE_URL = 'http://localhost:8007';
 
-export async function getTransactions() {
-    const response = await fetch(`${API_BASE_URL}/FinanceTracker/transactions`);
+const TRANSACTION_URL = `${API_BASE_URL}/FinanceTracker/transactions`;
 
+function normalizeTransaction(transaction) {
+    return {
+        ...transaction,
+        amount: Number(transaction.amount)
+    };
+}
+
+async function readResponse(response) {
     if (!response.ok) {
-        throw new Error('Could not load transactions');
+        let message = `Request failed (${response.status})`;
+        try{
+            const body = await response.json();
+            if (typeof body.detail === 'string') {
+                message = body.detail;
+            }
+        } catch {}
+        throw new Error(message);
     }
     return response.json();
+}
+export async function getTransactions() {
+    const response = await fetch(TRANSACTION_URL);
+    const data = await readResponse(response);
+    
+    return data.map(normalizeTransaction);
+}
+
+export async function createTransaction(transaction) {
+    const response = await fetch(TRANSACTION_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transaction),
+    });
+    const savedTransaction = await readResponse(response);
+    return normalizeTransaction(savedTransaction);
 }
