@@ -22,6 +22,7 @@ services:
     environment:
       POSTGRES_SERVER: db
       POSTGRES_PORT: "5432"
+      WATCHFILES_FORCE_POLLING: "true"
     ports:
       - "8007:8007"
     volumes:
