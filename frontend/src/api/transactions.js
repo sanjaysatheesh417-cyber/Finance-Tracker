@@ -50,3 +50,16 @@ export async function deleteTransaction(id) {
     }
     return response.json()
 }
+
+export async function updateTransaction(id, transaction) {
+    const response = await fetch(`${TRANSACTION_URL}/${id}`, {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(transaction)
+    })
+    if (!response.ok) {
+        throw new Error(`Could not update transaction (${response.status})`)
+    }
+    const savedTransaction = await response.json()
+    return normalizeTransaction(savedTransaction)
+}

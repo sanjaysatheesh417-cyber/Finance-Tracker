@@ -40,3 +40,16 @@ def delete_transaction(db: Session, trans_id: int) -> bool:
     db.delete(transaction)
     db.commit()
     return True
+
+def update_transaction(db: Session, trans_id: int, payload: schemas.TransactionUpdate):
+    transaction = (db.query(models.Transaction).filter(models.Transaction.id == trans_id).first())
+    if transaction is None:
+        return None
+    updates = payload.model_dump(exclude_unset=True)
+    if not updates:
+        return transaction
+    for field, value in updates.items():
+        setattr(transaction, field, value)
+    db.commit()
+    db.refresh(transaction)
+    return transaction

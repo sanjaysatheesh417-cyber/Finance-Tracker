@@ -1,7 +1,7 @@
 import './App.css'
 import { useState } from 'react';
 import { useEffect } from 'react';
-import { getTransactions, deleteTransaction } from './api/transactions';
+import { getTransactions, deleteTransaction, updateTransaction } from './api/transactions';
 import {TransactionsList} from './components/TransactionList';
 import { TransactionForm } from './components/TransactionForm';
 
@@ -12,6 +12,7 @@ export default function App() {
     const [loadError, setLoadError] = useState("")
     const [deletingId, setDeletingId] = useState(null)
     const [deleteError, setDeleteError] = useState('')
+    const [editingId, setEditingId] = useState(null)
 
     useEffect(() => {
         let ignoreResult = false
@@ -38,10 +39,11 @@ export default function App() {
         loadTransactions()
 
         return ()=>{
-            ignoreResult = true;
+            ignoreResult = true
         }
     }, [])
 
+    const transactionToEdit = transactions.find(transaction => transaction.id === editingId) ?? null
     const income = transactions.filter((transaction)=>transaction.mode === 'credited').reduce((total, transaction)=>total+transaction.amount, 0)
     const expenses = transactions.filter((transaction)=>transaction.mode === 'debited').reduce((total, transaction)=>total+transaction.amount, 0)
     const balance = income - expenses
@@ -50,6 +52,13 @@ export default function App() {
     )
     async function handleAdd(newTransaction) {
         setTransaction((current) => [...current, newTransaction])
+    }
+
+    async function handleUpdate(updatedTransaction) {
+        setTransaction(current => current.map(
+            transaction => transaction.id === updatedTransaction.id ? updatedTransaction : transaction
+        ))
+        setEditingId(null)
     }
 
     async function handleDelete(id) {
@@ -70,7 +79,13 @@ export default function App() {
     }
     return (
         <>
-        <TransactionForm onAdd={handleAdd}/>
+        <TransactionForm  
+            key={editingId ?? 'new'}
+            transaction={transactionToEdit}  
+            onAdd={handleAdd}
+            onUpdate={handleUpdate}
+            onCancelEdit={()=>setEditingId(null)}
+        />
         
         <section>
             <p>Income: {income}</p>
@@ -86,7 +101,7 @@ export default function App() {
         {deleteError && <p role='alert'>{deleteError}</p>}
         {loading ? (
             <p>Loading transactions.....</p>
-        ): (<TransactionsList transactions={visibleTransactions} onDelete={handleDelete} deletingId={deletingId}/>)}
+        ): (<TransactionsList transactions={visibleTransactions} onDelete={handleDelete} deletingId={deletingId} onEdit={setEditingId}/>)}
         </>
     )
 }

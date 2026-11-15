@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { createTransaction } from "../api/transactions"
+import { createTransaction ,updateTransaction} from "../api/transactions"
 
-export function TransactionForm({onAdd}) {
-    const [amount, setAmount] = useState('')
-    const [date, setDate] = useState('')
-    const [type, setType] = useState('debited')
-    const [description, setDescription] = useState("")
+export function TransactionForm({transaction, onAdd, onUpdate, onCancelEdit}) {
+    const [amount, setAmount] = useState(transaction ? String(transaction.amount) : '')
+    const [date, setDate] = useState(transaction?.transaction_date?.slice(0,10) ?? '')
+    const [type, setType] = useState(transaction?.mode ?? 'debited')
+    const [description, setDescription] = useState(transaction?.description ?? '')
     const [error, setError] = useState(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -33,11 +33,17 @@ export function TransactionForm({onAdd}) {
         setIsSubmitting(true);
 
         try{
-            const savedTransaction = await createTransaction(transactionData);
-            onAdd(savedTransaction)
-            setAmount('')
-            setDate('')
-            setType('debited')
+            if (transaction){
+                const updated = await updateTransaction(transaction.id, transactionData)
+                onUpdate(updated)
+            } else {
+                const created = await createTransaction(transactionData)
+                onAdd(created)
+                setAmount('')
+                setDate('')
+                setType('debited')
+                setDescription('')
+            }
         } catch (error) {
             setError(
                 error instanceof Error ? error.message: 'could not save the transaction.'
@@ -59,6 +65,7 @@ export function TransactionForm({onAdd}) {
             <button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Saving....' : 'Submit'}    
             </button>
+            {transaction && (<button type="button" onClick={onCancelEdit}>Cancel</button>)}
             {error && <p className='Error' role='alert'>{error}</p>}
         </form>
         </>

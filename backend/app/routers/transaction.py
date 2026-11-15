@@ -28,9 +28,17 @@ def list_transaction(
     db: Session = Depends(get_db)):
     return service.get_transactions(db, mode, sort_by, order, limit, offset)
 
-@router.delete("/transactions")
+@router.delete("/transactions/{trans_id}")
 def clear_transaction(trans_id: int, db: Session = Depends(get_db)):
     deleted = service.delete_transaction(db, trans_id)
     if not deleted:
         raise NOT_FOUND
     return {"deleted":True}
+
+@router.patch("/transactions/{trans_id}", response_model=schemas.TransactionRead)
+def update_transaction(trans_id: int, payload: schemas.TransactionUpdate, db: Session = Depends(get_db)):
+    transaction = service.update_transaction(db, trans_id, payload)
+    if transaction is None:
+        raise NOT_FOUND
+
+    return transaction
