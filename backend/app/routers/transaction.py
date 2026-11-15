@@ -27,3 +27,10 @@ def list_transaction(
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db)):
     return service.get_transactions(db, mode, sort_by, order, limit, offset)
+
+@router.delete("/transactions")
+def clear_transaction(trans_id: int, db: Session = Depends(get_db)):
+    deleted = service.delete_transaction(db, trans_id)
+    if not deleted:
+        raise NOT_FOUND
+    return {"deleted":True}

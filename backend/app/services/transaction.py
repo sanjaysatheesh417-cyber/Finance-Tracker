@@ -32,3 +32,11 @@ def get_transactions(db: Session, mode: models.Mode, sort_by: str = "time", orde
     else:
         column = column.asc()
     return query.order_by(column, models.Transaction.id).offset(offset).limit(limit).all()
+
+def delete_transaction(db: Session, trans_id: int) -> bool:
+    transaction = db.query(models.Transaction).filter(models.Transaction.id == trans_id).first()
+    if transaction is None:
+        return False
+    db.delete(transaction)
+    db.commit()
+    return True

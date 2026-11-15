@@ -40,3 +40,13 @@ export async function createTransaction(transaction) {
     const savedTransaction = await readResponse(response);
     return normalizeTransaction(savedTransaction);
 }
+
+export async function deleteTransaction(id) {
+    const response = await fetch(`${TRANSACTION_URL}/${id}`, {
+        method: 'DELETE'
+    })
+    if (!response.ok) {
+        throw new Error(`Could not delete transaction (${response.status})`)
+    }
+    return response.json()
+}

@@ -1,7 +1,7 @@
 import './App.css'
 import { useState } from 'react';
 import { useEffect } from 'react';
-import { getTransactions } from './api/transactions';
+import { getTransactions, deleteTransaction } from './api/transactions';
 import {TransactionsList} from './components/TransactionList';
 import { TransactionForm } from './components/TransactionForm';
 
@@ -10,6 +10,8 @@ export default function App() {
     const [filterType, setFilterType] = useState("all")
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState("")
+    const [deletingId, setDeletingId] = useState(null)
+    const [deleteError, setDeleteError] = useState('')
 
     useEffect(() => {
         let ignoreResult = false
@@ -46,10 +48,26 @@ export default function App() {
     const visibleTransactions = transactions.filter(
         (transaction) => filterType === 'all' || transaction.mode === filterType
     )
-    function handleAdd(newTransaction) {
+    async function handleAdd(newTransaction) {
         setTransaction((current) => [...current, newTransaction])
     }
 
+    async function handleDelete(id) {
+        if (!window.confirm('Delete this transaction?')) return
+
+        setDeleteError('')
+        setDeletingId(id)
+        try {
+            await deleteTransaction(id)
+            setTransaction(current=>current.filter(transaction => transaction.id !== id))
+        } catch (error) {
+            setDeleteError(
+                error instanceof Error ? error.message : 'Could not delete Transaction'
+            )
+        } finally {
+            setDeletingId(null)
+        }
+    }
     return (
         <>
         <TransactionForm onAdd={handleAdd}/>
@@ -65,9 +83,10 @@ export default function App() {
             <option value="credited">Income</option>
         </select>
         {loadError && <p role='alert'>{loadError}</p>}
+        {deleteError && <p role='alert'>{deleteError}</p>}
         {loading ? (
             <p>Loading transactions.....</p>
-        ): (<TransactionsList transactions={visibleTransactions}/>)}
+        ): (<TransactionsList transactions={visibleTransactions} onDelete={handleDelete} deletingId={deletingId}/>)}
         </>
     )
 }
