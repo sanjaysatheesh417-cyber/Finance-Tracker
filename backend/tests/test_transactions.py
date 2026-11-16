@@ -80,3 +80,21 @@ def test_updated_missing_transaction_return_404(client):
         json={"amount":350}
     )
     assert response.status_code == 404
+
+def test_create_with_invalid_amount_returns_422(client):
+    response = client.post(
+        "/FinanceTracker/transactions",
+        json={
+            "amount": "not-a-number",
+            "transaction_date": "2026-11-15",
+            "mode": "debited",
+            "description": "Groceries"
+        }
+    )
+    assert response.status_code == 422
+
+def test_delete_missing_transaction_returns_404(client):
+    response = client.delete(
+        "/FinanceTracker/transactions/9999999"
+    )
+    assert response.status_code == 404
