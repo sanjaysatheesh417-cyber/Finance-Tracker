@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, Numeric, Date
+from sqlalchemy.orm import relationship
 from .database import Base
 from datetime import datetime, timezone
 import enum
@@ -16,3 +17,16 @@ class Transaction(Base):
     transaction_date = Column(Date, nullable=False)
     description = Column(String(255), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc))
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+
+    category = relationship("Category", back_populates="transactions")
+class Category(Base):
+    __tablename__ = 'categories'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(50), unique=True, nullable=False)
+
+    transactions = relationship(
+        "Transaction",
+        back_populates="category"
+    )

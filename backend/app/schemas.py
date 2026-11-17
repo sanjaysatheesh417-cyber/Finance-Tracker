@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
 from datetime import datetime, date
 from .models import Mode
 from decimal import Decimal
@@ -32,3 +32,18 @@ class TransactionUpdate(BaseModel):
             ):
                 raise ValueError(f"{field_name} cannot be null")
         return self
+
+class CategoryCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=50)
+
+    @field_validator("name")
+    @classmethod
+    def trim_name(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Category name cannot be blank")
+        return value
+class CategoryRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
