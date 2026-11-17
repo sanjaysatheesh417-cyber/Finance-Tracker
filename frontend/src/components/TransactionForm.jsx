@@ -1,13 +1,14 @@
 import { useState } from "react"
 import { createTransaction ,updateTransaction} from "../api/transactions"
 
-export function TransactionForm({transaction, onAdd, onUpdate, onCancelEdit}) {
+export function TransactionForm({transaction, categories=[], onAdd, onUpdate, onCancelEdit}) {
     const [amount, setAmount] = useState(transaction ? String(transaction.amount) : '')
     const [date, setDate] = useState(transaction?.transaction_date?.slice(0,10) ?? '')
     const [type, setType] = useState(transaction?.mode ?? 'debited')
     const [description, setDescription] = useState(transaction?.description ?? '')
     const [error, setError] = useState(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [categoryId, setCategoryId] = useState(String(transaction?.categoryId ?? ''))
 
     async function handleSubmit(e) {
         e.preventDefault()
@@ -27,10 +28,11 @@ export function TransactionForm({transaction, onAdd, onUpdate, onCancelEdit}) {
             amount: parsedAmount,
             transaction_date: date,
             mode: type,
+            categoryId: categoryId ? Number(categoryId) : null,
             description: description.trim() || null
         }
 
-        setIsSubmitting(true);
+        setIsSubmitting(true)
 
         try{
             if (transaction){
@@ -60,6 +62,14 @@ export function TransactionForm({transaction, onAdd, onUpdate, onCancelEdit}) {
             <select value={type} onChange={e => setType(e.target.value)}>
                 <option value="debited">Expense</option>
                 <option value="credited">Income</option>
+            </select>
+            <select value={categories} onChange={e => setCategoryId(e.target.value)} disabled={isSubmitting}>
+                <option value="">No category</option>
+                {categories.map(category => (
+                    <option key={category.id} value={category.id}>
+                        {category.name}
+                    </option>
+                ))}
             </select>
             <textarea value={description} onChange={e=> setDescription(e.target.value)} placeholder="Description (optional)"/>
             <button type="submit" disabled={isSubmitting}>

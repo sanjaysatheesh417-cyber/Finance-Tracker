@@ -1,18 +1,21 @@
 import './App.css'
 import { useState } from 'react';
 import { useEffect } from 'react';
-import { getTransactions, deleteTransaction, updateTransaction } from './api/transactions';
+import { getTransactions, deleteTransaction, updateTransaction, getCategories } from './api/transactions';
 import {TransactionsList} from './components/TransactionList';
 import { TransactionForm } from './components/TransactionForm';
 
 export default function App() {
     const [transactions, setTransaction] = useState([])
     const [filterType, setFilterType] = useState("all")
-    const [loading, setLoading] = useState(true);
-    const [loadError, setLoadError] = useState("")
+    const [transactionsLoading, setTransactionsLoading] = useState(true)
+    const [transactionsError, setTransactionsError] = useState("")
+    const [categoriesLoading, setCategoriesLoading] = useState(true)
+    const [categoriesError, setCategoriesError] = useState("")
     const [deletingId, setDeletingId] = useState(null)
     const [deleteError, setDeleteError] = useState('')
     const [editingId, setEditingId] = useState(null)
+    const [categories, setCategories] = useState([])
 
     useEffect(() => {
         let ignoreResult = false
@@ -26,13 +29,13 @@ export default function App() {
                 }
             } catch (error) {
                 if (!ignoreResult) {
-                    setLoadError(
+                    setTransactionsError(
                     error instanceof Error ? error.message: "could not load transactions"
                 )
                 }
             } finally {
                 if (!ignoreResult) {
-                    setLoading(false)
+                    setTransactionsLoading(false)
                 }
             }
         }
@@ -43,6 +46,30 @@ export default function App() {
         }
     }, [])
 
+    useEffect(()=>{
+        let ignoreResult = false
+        async function loadCategories() {
+            try {
+                const data = await getCategories()
+                if (!ignoreResult) {
+                    setCategories(data)
+                } 
+            } catch (error) {
+                if (!ignoreResult) {
+                    setCategoriesError( error instanceof Error ? error.message: 'could not load categories ')
+                }
+            } finally {
+                if (!ignoreResult) {
+                    setCategoriesLoading(false)
+                }
+            }
+        }
+        loadCategories()
+        return () => {
+            ignoreResult = true
+        }
+    }, [])
+    
     const transactionToEdit = transactions.find(transaction => transaction.id === editingId) ?? null
     const income = transactions.filter((transaction)=>transaction.mode === 'credited').reduce((total, transaction)=>total+transaction.amount, 0)
     const expenses = transactions.filter((transaction)=>transaction.mode === 'debited').reduce((total, transaction)=>total+transaction.amount, 0)
@@ -81,7 +108,8 @@ export default function App() {
         <>
         <TransactionForm  
             key={editingId ?? 'new'}
-            transaction={transactionToEdit}  
+            transaction={transactionToEdit}
+            categories={categories}
             onAdd={handleAdd}
             onUpdate={handleUpdate}
             onCancelEdit={()=>setEditingId(null)}
@@ -97,12 +125,12 @@ export default function App() {
             <option value="debited">Expense</option>
             <option value="credited">Income</option>
         </select>
-        {loadError && <p role='alert'>{loadError}</p>}
+        {transactionsError && <p role='alert'>{transactionsError}</p>}
+        {categoriesError && <p role='alert'>{categoriesError}</p>}
         {deleteError && <p role='alert'>{deleteError}</p>}
-        {loading ? (
+        {transactionsLoading ? (
             <p>Loading transactions.....</p>
         ): (<TransactionsList transactions={visibleTransactions} onDelete={handleDelete} deletingId={deletingId} onEdit={setEditingId}/>)}
         </>
     )
 }
-

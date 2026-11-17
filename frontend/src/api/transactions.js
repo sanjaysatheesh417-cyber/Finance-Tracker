@@ -1,6 +1,9 @@
+import { attachClipboardStubToView } from "@testing-library/user-event/dist/cjs/utils/index.js";
+
 const API_BASE_URL = 'http://localhost:8007';
 
 const TRANSACTION_URL = `${API_BASE_URL}/FinanceTracker/transactions`;
+const CATEGORIES_URL = `${API_BASE_URL}/categories`;
 
 function normalizeTransaction(transaction) {
     return {
@@ -11,7 +14,7 @@ function normalizeTransaction(transaction) {
 
 async function readResponse(response) {
     if (!response.ok) {
-        let message = `Request failed (${response.status})`;
+        let message = `Request failed (${response.status})`
         try{
             const body = await response.json();
             if (typeof body.detail === 'string') {
@@ -23,10 +26,10 @@ async function readResponse(response) {
     return response.json();
 }
 export async function getTransactions() {
-    const response = await fetch(TRANSACTION_URL);
-    const data = await readResponse(response);
+    const response = await fetch(TRANSACTION_URL)
+    const data = await readResponse(response)
     
-    return data.map(normalizeTransaction);
+    return data.map(normalizeTransaction)
 }
 
 export async function createTransaction(transaction) {
@@ -38,7 +41,7 @@ export async function createTransaction(transaction) {
         body: JSON.stringify(transaction),
     });
     const savedTransaction = await readResponse(response);
-    return normalizeTransaction(savedTransaction);
+    return normalizeTransaction(savedTransaction)
 }
 
 export async function deleteTransaction(id) {
@@ -62,4 +65,19 @@ export async function updateTransaction(id, transaction) {
     }
     const savedTransaction = await response.json()
     return normalizeTransaction(savedTransaction)
+}
+
+export async function createCategory(category) {
+    const response = await fetch (CATEGORIES_URL, {
+        method: 'POST',
+        headers: { 'Content-Type' : 'application/json'},
+        body: JSON.stringify(category)
+    }
+    )
+    return await readResponse(response)
+}
+
+export async function getCategories() {
+    const response = await fetch (CATEGORIES_URL)
+    return await readResponse(response)
 }
