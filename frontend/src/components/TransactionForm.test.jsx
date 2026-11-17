@@ -118,4 +118,33 @@ describe('TransactionForm submission', () => {
         })
         expect(onUpdate).toHaveBeenCalledWith(updatedTransaction)
     })
+
+    it ('shows an error and does not add when the API request fails', async () => {
+        const user = userEvent.setup()
+        const onAdd = vi.fn()
+        vi.mocked(createTransaction).mockRejectedValue(
+            new Error('Server unavailable')
+        )
+        render(
+            <TransactionForm
+            transaction={null}
+            onAdd={onAdd}
+            onUpdate={vi.fn()}
+            onCancelEdit={vi.fn()}
+            />
+        )
+        await user.type(screen.getByPlaceholderText('amount'), '450')
+        fireEvent.change(document.querySelector('input[type="date"]'), {
+            target: {value: '2026-11-20'}
+        })
+
+        await user.type(
+            screen.getByPlaceholderText('Description (optional)'), 'Bonus'
+        )
+        await user.click(screen.getByRole('button', { name: /submit/i }))
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'Server unavailable'
+        )
+        expect(onAdd).not.toHaveBeenCalled()
+    })
 })
