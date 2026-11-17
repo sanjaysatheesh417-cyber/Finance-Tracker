@@ -14,3 +14,7 @@ def create_category(payload: CategoryCreate, db: Session = Depends(get_db)):
         return category_service.create_category(db, payload)
     except IntegrityError:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A category with this name already exists")
+
+@router.get("", response_model=list[CategoryRead])
+def list_categories(db: Session = Depends(get_db)):
+    return category_service.get_categories(db)

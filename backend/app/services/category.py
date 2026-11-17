@@ -16,3 +16,6 @@ def create_category(db: Session, payload: schemas.CategoryCreate) -> models.Cate
         raise
     db.refresh(category)
     return category
+
+def get_categories(db: Session) -> list[models.Category]:
+    return (db.query(models.Category).order_by(models.Category.name).all())
