@@ -8,7 +8,8 @@ def create_transaction(db: Session, payload: schemas.TransactionCreate) -> model
         amount= payload.amount,
         mode = payload.mode,
         transaction_date = payload.transaction_date,
-        description = payload.description
+        description = payload.description,
+        category_id = payload.category_id
     )
     db.add(transaction)
     db.commit()

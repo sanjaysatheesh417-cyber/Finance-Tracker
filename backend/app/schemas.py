@@ -8,6 +8,7 @@ class TransactionBase(BaseModel):
     mode: Mode
     transaction_date: date
     description: str| None = Field(default=None, max_length=255)
+    category_id: int | None = None
 
 class TransactionCreate(TransactionBase):
     pass
@@ -23,6 +24,7 @@ class TransactionUpdate(BaseModel):
     transaction_date: date | None = None
     mode: Mode | None = None
     description: str | None = None
+    category_id: int | None = None
 
     @model_validator(mode="after")
     def required_fields_cannot_be_null(self):
@@ -45,5 +47,5 @@ class CategoryCreate(BaseModel):
         return value
 class CategoryRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    id: int
+    id : int
     name: str

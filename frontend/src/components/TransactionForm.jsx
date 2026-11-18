@@ -8,7 +8,7 @@ export function TransactionForm({transaction, categories=[], onAdd, onUpdate, on
     const [description, setDescription] = useState(transaction?.description ?? '')
     const [error, setError] = useState(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [categoryId, setCategoryId] = useState(String(transaction?.categoryId ?? ''))
+    const [categoryId, setCategoryId] = useState(String(transaction?.category_id ?? ''))
 
     async function handleSubmit(e) {
         e.preventDefault()
@@ -28,7 +28,7 @@ export function TransactionForm({transaction, categories=[], onAdd, onUpdate, on
             amount: parsedAmount,
             transaction_date: date,
             mode: type,
-            categoryId: categoryId ? Number(categoryId) : null,
+            category_id: categoryId ? Number(categoryId) : null,
             description: description.trim() || null
         }
 
@@ -63,7 +63,7 @@ export function TransactionForm({transaction, categories=[], onAdd, onUpdate, on
                 <option value="debited">Expense</option>
                 <option value="credited">Income</option>
             </select>
-            <select value={categories} onChange={e => setCategoryId(e.target.value)} disabled={isSubmitting}>
+            <select value={categoryId} onChange={e => setCategoryId(e.target.value)} disabled={isSubmitting}>
                 <option value="">No category</option>
                 {categories.map(category => (
                     <option key={category.id} value={category.id}>

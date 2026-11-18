@@ -4,10 +4,12 @@ import { useEffect } from 'react';
 import { getTransactions, deleteTransaction, updateTransaction, getCategories } from './api/transactions';
 import {TransactionsList} from './components/TransactionList';
 import { TransactionForm } from './components/TransactionForm';
+import { CategoryForm } from './components/CategoryForm';
 
 export default function App() {
     const [transactions, setTransaction] = useState([])
     const [filterType, setFilterType] = useState("all")
+    const [categoryFilter, setCategoryFilter] = useState('all')
     const [transactionsLoading, setTransactionsLoading] = useState(true)
     const [transactionsError, setTransactionsError] = useState("")
     const [categoriesLoading, setCategoriesLoading] = useState(true)
@@ -75,7 +77,11 @@ export default function App() {
     const expenses = transactions.filter((transaction)=>transaction.mode === 'debited').reduce((total, transaction)=>total+transaction.amount, 0)
     const balance = income - expenses
     const visibleTransactions = transactions.filter(
-        (transaction) => filterType === 'all' || transaction.mode === filterType
+        (transaction) => {
+            const matchesType = filterType === 'all' || transaction.mode === filterType
+            const matchesCategory = categoryFilter === 'all' || String(transaction.category_id) === categoryFilter
+            return matchesType && matchesCategory
+        }
     )
     async function handleAdd(newTransaction) {
         setTransaction((current) => [...current, newTransaction])
@@ -104,8 +110,14 @@ export default function App() {
             setDeletingId(null)
         }
     }
+
+    async function handleCategoryCreated(newCategory) {
+        setCategories(current => [...current, newCategory])
+    }
+
     return (
         <>
+        <CategoryForm onCreated={handleCategoryCreated}/>
         <TransactionForm  
             key={editingId ?? 'new'}
             transaction={transactionToEdit}
@@ -125,12 +137,20 @@ export default function App() {
             <option value="debited">Expense</option>
             <option value="credited">Income</option>
         </select>
+        <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+            <option value="all">All categories</option>
+            {categories.map(category => (
+                <option key={category.id} value={category.id}>
+                    {category.name}
+                </option>
+            ))}
+        </select>
         {transactionsError && <p role='alert'>{transactionsError}</p>}
         {categoriesError && <p role='alert'>{categoriesError}</p>}
         {deleteError && <p role='alert'>{deleteError}</p>}
         {transactionsLoading ? (
             <p>Loading transactions.....</p>
-        ): (<TransactionsList transactions={visibleTransactions} onDelete={handleDelete} deletingId={deletingId} onEdit={setEditingId}/>)}
+        ): (<TransactionsList transactions={visibleTransactions} categories={categories} onDelete={handleDelete} deletingId={deletingId} onEdit={setEditingId}/>)}
         </>
     )
 }
