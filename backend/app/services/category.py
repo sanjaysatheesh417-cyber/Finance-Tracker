@@ -19,3 +19,22 @@ def create_category(db: Session, payload: schemas.CategoryCreate) -> models.Cate
 
 def get_categories(db: Session) -> list[models.Category]:
     return (db.query(models.Category).order_by(models.Category.name).all())
+
+def delete_category(db: Session, category_id: int) -> str:
+    category = (
+        db.query(models.Category).filter(models.Category.id == category_id).first()
+    )
+
+    if category is None:
+        return 'not_found'
+
+    transaction_user_category = (
+        db.query(models.Transaction.id).filter(models.Transaction.category_id == category_id).first()
+    )
+
+    if transaction_user_category is not None:
+        return "in_use"
+
+    db.delete(category)
+    db.commit()
+    return "deleted"

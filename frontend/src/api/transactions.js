@@ -81,3 +81,10 @@ export async function getCategories() {
     const response = await fetch (CATEGORIES_URL)
     return await readResponse(response)
 }
+
+export async function deleteCategory(categoryId) {
+    const response = await fetch(`${CATEGORIES_URL}/${categoryId}`, {
+        method: 'DELETE'
+    })
+    return await readResponse(response)
+}

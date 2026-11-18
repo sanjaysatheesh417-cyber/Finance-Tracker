@@ -1,7 +1,7 @@
 import './App.css'
 import { useState } from 'react';
 import { useEffect } from 'react';
-import { getTransactions, deleteTransaction, updateTransaction, getCategories } from './api/transactions';
+import { getTransactions, deleteTransaction, updateTransaction, getCategories, deleteCategory } from './api/transactions';
 import {TransactionsList} from './components/TransactionList';
 import { TransactionForm } from './components/TransactionForm';
 import { CategoryForm } from './components/CategoryForm';
@@ -16,6 +16,8 @@ export default function App() {
     const [categoriesError, setCategoriesError] = useState("")
     const [deletingId, setDeletingId] = useState(null)
     const [deleteError, setDeleteError] = useState('')
+    const [deletingCategoryId, setDeletingCategoryId] = useState(null)
+    const [categoryDeleteError, setCategoryDeleteError] = useState('')
     const [editingId, setEditingId] = useState(null)
     const [categories, setCategories] = useState([])
 
@@ -115,9 +117,39 @@ export default function App() {
         setCategories(current => [...current, newCategory])
     }
 
+    async function handleDeleteCategory(id) {
+        if (!window.confirm('Delete this category?')) return
+        setCategoryDeleteError('')
+        setDeletingCategoryId(id)
+
+        try{
+            await deleteCategory(id)
+            setCategories(current => current.filter(category => category.id !== id))
+        } catch (error) {
+            setCategoryDeleteError(
+                error instanceof Error ? error.message : 'Could not delete category'
+            )
+        } finally {
+            setDeletingCategoryId(null)
+        }
+    }
+
     return (
         <>
         <CategoryForm onCreated={handleCategoryCreated}/>
+        <section>
+            <h2>Categories</h2>
+            {categories.map(category => (
+                <p key={category.id}>
+                    {category.name}{' '}
+                    <button type='button' onClick={() => handleDeleteCategory(category.id)}
+                    disabled={deletingCategoryId === category.id}>
+                        {deletingCategoryId === category.id ? 'Deleting...' : 'Delete' }
+                    </button>
+                </p>
+            ))}
+            {categoryDeleteError && (<p role='alert'>{categoryDeleteError}</p>)}
+        </section>
         <TransactionForm  
             key={editingId ?? 'new'}
             transaction={transactionToEdit}
