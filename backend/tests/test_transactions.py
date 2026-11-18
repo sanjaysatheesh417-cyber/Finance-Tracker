@@ -1,38 +1,5 @@
-import pytest
 from decimal import Decimal
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
-from app.main import app as fastapi_app
-from app.database import Base, get_db
-import app.models
 
-@pytest.fixture
-def client():
-    test_engine = create_engine("sqlite://", connect_args={"check_same_thread":False}, poolclass=StaticPool)
-    TestingSessionLocal = sessionmaker(
-        bind=test_engine,
-        autocommit=False,
-        autoflush=False
-    )
-    Base.metadata.create_all(bind=test_engine)
-    
-    def override_get_db():
-        db = TestingSessionLocal()
-        try:
-            yield db
-        finally:
-            db.close()
-
-    fastapi_app.dependency_overrides[get_db] = override_get_db
-
-    with TestClient(fastapi_app) as test_client:
-        yield test_client
-
-    fastapi_app.dependency_overrides.pop(get_db, None)
-    Base.metadata.drop_all(bind=test_engine)
-    test_engine.dispose()
 
 def make_transaction(client):
     response = client.post("/FinanceTracker/transactions", json={
@@ -98,3 +65,32 @@ def test_delete_missing_transaction_returns_404(client):
         "/FinanceTracker/transactions/9999999"
     )
     assert response.status_code == 404
+
+def test_create_transaction_with_category(client):
+    category_response = client.post("/categories", json={"name":"food"})
+    assert category_response.status_code == 201
+    category_id = category_response.json()["id"]
+    response = client.post(
+        "/FinanceTracker/transactions",
+        json={
+            "amount":125,
+            "transaction_date": "2026-11-18",
+            "mode": "debited",
+            "description": "Lunch",
+            "category_id": category_id
+        }
+    )
+    assert response.status_code == 201
+    assert response.json()["category_id"] == category_id
+
+def test_update_transaction_category(client):
+    created = make_transaction(client)
+    category_response = client.post("/categories", json={"name":"food"})
+    assert category_response.status_code == 201
+    category_id = category_response.json()["id"]
+    response = client.patch(
+        f"/FinanceTracker/transactions/{created['id']}",
+        json={"category_id": category_id}
+    )
+    assert response.status_code == 200
+    assert response.json()["category_id"] == category_id

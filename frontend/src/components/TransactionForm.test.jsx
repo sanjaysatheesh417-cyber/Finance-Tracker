@@ -23,7 +23,7 @@ it('prefills the form with the selected transaction', () => {
     expect(screen.getByDisplayValue('270000')).toBeInTheDocument()
     expect(screen.getByDisplayValue('2026-11-15')).toBeInTheDocument()
     expect(screen.getByDisplayValue('salary')).toBeInTheDocument()
-    expect(screen.getByRole('combobox')).toHaveValue('credited')
+    expect(screen.getAllByRole('combobox')[0]).toHaveValue('credited')
 });
 
 vi.mock('../api/transactions', ()=> ({
@@ -59,14 +59,15 @@ describe('TransactionForm submission', () => {
         fireEvent.change(document.querySelector('input[type="date"]'), {
             target: {value: '2026-11-20'}
         })
-        await user.selectOptions(screen.getByRole('combobox'), 'credited')
+        await user.selectOptions(screen.getAllByRole('combobox')[0], 'credited')
         await user.type(screen.getByPlaceholderText('Description (optional)'), 'Bonus')
         await user.click(screen.getByRole('button', {name:/submit/i}))
 
-        expect(createTransaction).toHaveBeenCalled({
+        expect(createTransaction).toHaveBeenCalledWith({
             amount: 450,
             transaction_date: '2026-11-20',
             mode: 'credited',
+            category_id: null,
             description: 'Bonus',
         })
         expect(onAdd).toHaveBeenCalledWith(savedTransaction)
@@ -105,7 +106,7 @@ describe('TransactionForm submission', () => {
         fireEvent.change(document.querySelector('input[type="date"]'), {
             target: { value: '2026-11-15'}
         })
-        await user.selectOptions(screen.getByRole('combobox'), 'credited')
+        await user.selectOptions(screen.getAllByRole('combobox')[0], 'credited')
         const descriptionInput = screen.getByPlaceholderText('Description (optional)')
         await user.clear(descriptionInput)
         await user.type(descriptionInput, 'monthly salary')
@@ -114,7 +115,8 @@ describe('TransactionForm submission', () => {
             amount: 275000,
             transaction_date: '2026-11-15',
             mode: 'credited',
-            description: 'monthly salary'
+            description: 'monthly salary',
+            category_id: null
         })
         expect(onUpdate).toHaveBeenCalledWith(updatedTransaction)
     })
@@ -146,5 +148,36 @@ describe('TransactionForm submission', () => {
             'Server unavailable'
         )
         expect(onAdd).not.toHaveBeenCalled()
+    })
+    it ('sends the selected category ID when creating a transaction', async () => {
+        const user = userEvent.setup()
+        createTransaction.mockResolvedValue({
+            id: 22,
+            amount: 125,
+            transaction_date: "2026-11-18",
+            mode: 'debited',
+            category_id: 4,
+            description: null
+        })
+        const { container } = render(
+            <TransactionForm
+            categories={[{ id: 4, name: 'food'}]}
+            onAdd={vi.fn()}
+            onUpdate={vi.fn()}
+            onCancelEdit={vi.fn()}
+            />
+        )
+        await user.type(screen.getByPlaceholderText('amount'), '125')
+        fireEvent.change(container.querySelector('input[type="date"]'), {
+            target: { value: '2026-11-18'}
+        })
+        await user.selectOptions(screen.getAllByRole('combobox')[1], '4')
+        await user.click(screen.getByRole('button', { name: /submit/i }))
+        expect(createTransaction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                amount: 125,
+                category_id: 4
+            })
+        )
     })
 })

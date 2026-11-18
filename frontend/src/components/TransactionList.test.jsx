@@ -27,4 +27,25 @@ describe('TransactionList', () => {
         await user.click(screen.getByRole('button', {name: 'Delete'}))
         expect(onDelete).toHaveBeenCalledWith(7)
     })
+    it('shows the transaction category name', () => {
+        const transaction = {
+            id: 1,
+            amount: 125,
+            transaction_date: '2026-11-18',
+            mode: 'debited',
+            description: 'Lunch',
+            category_id: 4
+        }
+
+        render(
+            <TransactionsList
+            transactions={[transaction]}
+            categories={[{ id: 4, name: 'food'}]}
+            onDelete={vi.fn()}
+            onEdit={vi.fn()}
+            deletingId={null}
+            />
+        )
+        expect(screen.getByText(/food/i)).toBeInTheDocument()
+    })
 })
