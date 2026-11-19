@@ -5,6 +5,7 @@ import { getTransactions, deleteTransaction, updateTransaction, getCategories, d
 import {TransactionsList} from './components/TransactionList';
 import { TransactionForm } from './components/TransactionForm';
 import { CategoryForm } from './components/CategoryForm';
+import { MonthlyCategorySummary } from './components/MonthlyCategorySummary';
 
 export default function App() {
     const [transactions, setTransaction] = useState([])
@@ -164,6 +165,7 @@ export default function App() {
             <p>Expenses: {expenses}</p>
             <p>Balance: {balance}</p>
         </section>
+        <MonthlyCategorySummary/>
         <select value={filterType} onChange={(e)=>setFilterType(e.target.value)}>
             <option value="all">All</option>
             <option value="debited">Expense</option>

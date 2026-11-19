@@ -4,6 +4,7 @@ const API_BASE_URL = 'http://localhost:8007';
 
 const TRANSACTION_URL = `${API_BASE_URL}/FinanceTracker/transactions`;
 const CATEGORIES_URL = `${API_BASE_URL}/categories`;
+const MONTHLY_CATEGORY_SPENDING_URL = `${API_BASE_URL}/reports/monthly/category-spending`
 
 function normalizeTransaction(transaction) {
     return {
@@ -86,5 +87,16 @@ export async function deleteCategory(categoryId) {
     const response = await fetch(`${CATEGORIES_URL}/${categoryId}`, {
         method: 'DELETE'
     })
+    return await readResponse(response)
+}
+
+export async function getMonthlyCategorySpending(year, month) {
+    const params = new URLSearchParams({
+        year: String(year),
+        month: String(month)
+    })
+    const response = await fetch(
+        `${MONTHLY_CATEGORY_SPENDING_URL}?${params.toString()}`
+    )
     return await readResponse(response)
 }
