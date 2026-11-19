@@ -49,3 +49,8 @@ class CategoryRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id : int
     name: str
+
+class CategorySpending(BaseModel):
+    category_id: int | None
+    category_name: str
+    total: Decimal

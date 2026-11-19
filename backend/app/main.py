@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from .routers.transaction import router as transaction_router
 from .routers.category import router as category_router
+from .routers.reports import router as reports_router
 
 app = FastAPI(
     title="Finance Tracker",
@@ -20,6 +21,7 @@ app.add_middleware(
 
 app.include_router(transaction_router)
 app.include_router(category_router)
+app.include_router(reports_router)
 
 @app.get("/health", include_in_schema=False)
 def health():
