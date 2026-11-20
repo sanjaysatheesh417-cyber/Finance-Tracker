@@ -54,3 +54,18 @@ class CategorySpending(BaseModel):
     category_id: int | None
     category_name: str
     total: Decimal
+
+class BudgetCreate(BaseModel):
+    category_id: int = Field(gt=0)
+    year: int = Field(ge=1, le=9998)
+    month: int = Field(ge=1, le=12)
+    amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
+
+class BudgetRead(BaseModel):
+    id: int
+    category_id: int
+    year: int
+    month: int
+    amount: Decimal
+
+    model_config = ConfigDict(from_attributes=True)
