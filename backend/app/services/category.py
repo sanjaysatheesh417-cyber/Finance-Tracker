@@ -35,6 +35,13 @@ def delete_category(db: Session, category_id: int) -> str:
     if transaction_user_category is not None:
         return "in_use"
 
+    budget_user_category = (
+        db.query(models.Budget.id).filter(models.Budget.category_id == category_id).first()
+    )
+
+    if budget_user_category is not None:
+        return "in_use"
+    
     db.delete(category)
     db.commit()
     return "deleted"

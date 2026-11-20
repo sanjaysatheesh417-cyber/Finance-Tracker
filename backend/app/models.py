@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, Numeric, Date
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, Numeric, Date, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import relationship
 from .database import Base
 from datetime import datetime, timezone
@@ -29,4 +29,24 @@ class Category(Base):
     transactions = relationship(
         "Transaction",
         back_populates="category"
+    )
+
+class Budget(Base):
+    __tablename__ = "budgets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+    year = Column(Integer, nullable=False)
+    month = Column(Integer, nullable=False)
+    amount = Column(Numeric(12, 2), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "category_id",
+            "year",
+            "month",
+            name="uq_budgets_category_period"
+        ),
+        CheckConstraint("month >= 1 AND month <= 12"),
+        CheckConstraint("amount > 0")
     )
