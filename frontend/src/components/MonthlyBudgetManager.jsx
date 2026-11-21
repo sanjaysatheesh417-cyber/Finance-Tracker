@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getBudgets, createBudget, updateBudget } from "../api/transactions";
 
-export function MonthlyBudgetManager({categories, selectedMonth}) {
+export function MonthlyBudgetManager({categories, selectedMonth, spendingByCategory = []}) {
     const [budgets, setBudgets] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState('')
@@ -112,9 +112,18 @@ export function MonthlyBudgetManager({categories, selectedMonth}) {
                 <ul>
                     {budgets.map(budget => {
                         const categoryName = categories.find(category => category.id === budget.category_id)?.name?? 'Unknown category'
+                        const spent = Number(spendingByCategory.find(
+                            row => row.category_id === budget.category_id
+                        )?.total ?? 0)
+                        const limit = Number(budget.amount)
+                        const remaining = limit - spent
+
                         return(
                             <li key={budget.id}>
-                                {categoryName}: {Number(budget.amount).toFixed(2)}
+                                {categoryName}: spent {spent.toFixed(2)} / {limit.toFixed(2)}
+                                {'-'}
+                                {remaining >= 0
+                                ? `${remaining.toFixed(2)} remaining`: `${Math.abs(remaining).toFixed(2)} over budget`}
                             </li>
                         )
                     })}

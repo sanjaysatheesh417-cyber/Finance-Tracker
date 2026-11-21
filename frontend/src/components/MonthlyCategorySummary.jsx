@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getMonthlyCategorySpending } from "../api/transactions";
 
-export function MonthlyCategorySummary({ selectedMonth, onMonthChange}) {
+export function MonthlyCategorySummary({ selectedMonth, onMonthChange, onSummaryLoaded}) {
     const [summary, setSummary] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState('')
@@ -14,11 +14,13 @@ export function MonthlyCategorySummary({ selectedMonth, onMonthChange}) {
         async function loadSummary() {
             setIsLoading(true)
             setError('')
+            onSummaryLoaded?.([])
 
             try {
                 const data = await getMonthlyCategorySpending(year, month)
                 if (!ignoreResult) {
                     setSummary(data)
+                    onSummaryLoaded?.(data)
                 }
             } catch (err) {
                 if (!ignoreResult) {
