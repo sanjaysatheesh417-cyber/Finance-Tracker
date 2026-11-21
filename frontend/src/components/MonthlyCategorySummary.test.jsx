@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { getMonthlyCategorySpending } from '../api/transactions'
 import { MonthlyCategorySummary } from './MonthlyCategorySummary'
-import { CategoryForm } from './CategoryForm'
 
 vi.mock('../api/transactions', () => ({
     getMonthlyCategorySpending: vi.fn()
@@ -19,16 +18,36 @@ describe('MonthlyCategorySummary', () => {
                 total: '6000.00'
             }
         ])
-        render(<MonthlyCategorySummary />)
+        render(<MonthlyCategorySummary 
+        selectedMonth="2026-11"
+        onMonthChange={vi.fn()}/>)
 
         expect(await screen.findByText(/food: 6000\.00/)).toBeInTheDocument()
     })
 
-    it('loads a report when the selected month changes', async () => {
+    it('notifies the parent and loads a report when the selected month changes', async () => {
         getMonthlyCategorySpending.mockResolvedValue([])
-        render(<MonthlyCategorySummary/>)
-        const monthInput = screen.getByLabelText(/choose a month/i)
-        fireEvent.change(monthInput, { target: {value: '2026-10'}})
+        const onMonthChange = vi.fn()
+
+        const {rerender} = render(
+            <MonthlyCategorySummary
+            selectedMonth="2026-11"
+            onMonthChange={onMonthChange}
+            />
+        )
+
+        fireEvent.change(screen.getByLabelText(/choose a month/i), {
+            target: {value: '2026-10'}
+        })
+
+        expect(onMonthChange).toHaveBeenCalledWith('2026-10')
+
+        rerender(
+            <MonthlyCategorySummary
+            selectedMonth="2026-10"
+            onMonthChange={onMonthChange}
+            />
+        )
 
         await waitFor(() => {
             expect(getMonthlyCategorySpending).toHaveBeenCalledWith(2026, 10)
@@ -40,7 +59,10 @@ describe('MonthlyCategorySummary', () => {
             new Error('Report unavailable')
         )
 
-        render(<MonthlyCategorySummary/>)
+        render(<MonthlyCategorySummary
+        selectedMonth="2026-11"
+        onMonthChange={vi.fn()}/>)
+        
         expect(await screen.findByRole('alert')).toHaveTextContent('Report unavailable')
     })
 })

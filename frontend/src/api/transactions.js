@@ -5,6 +5,7 @@ const API_BASE_URL = 'http://localhost:8007';
 const TRANSACTION_URL = `${API_BASE_URL}/FinanceTracker/transactions`;
 const CATEGORIES_URL = `${API_BASE_URL}/categories`;
 const MONTHLY_CATEGORY_SPENDING_URL = `${API_BASE_URL}/reports/monthly/category-spending`
+const BUDGETS_URL = `${API_BASE_URL}/budgets`
 
 function normalizeTransaction(transaction) {
     return {
@@ -98,5 +99,33 @@ export async function getMonthlyCategorySpending(year, month) {
     const response = await fetch(
         `${MONTHLY_CATEGORY_SPENDING_URL}?${params.toString()}`
     )
+    return await readResponse(response)
+}
+
+export async function getBudgets(year, month) {
+    const params = new URLSearchParams({
+        year: String(year),
+        month: String(month)
+    })
+    const response = await fetch(`${BUDGETS_URL}?${params.toString()}`)
+    return await readResponse(response)
+}
+
+export async function createBudget(budget) {
+    const response = await fetch(BUDGETS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(budget)
+    })
+
+    return await readResponse(response)
+}
+
+export async function updateBudget(budgetId, budget) {
+    const response = await fetch(`${BUDGETS_URL}/${budgetId}`,{
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(budget)
+    })
     return await readResponse(response)
 }

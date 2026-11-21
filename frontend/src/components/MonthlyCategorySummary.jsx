@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
 import { getMonthlyCategorySpending } from "../api/transactions";
-import { isDifferentPointerPosition } from "@testing-library/user-event/dist/cjs/system/pointer/shared.js";
 
-export function MonthlyCategorySummary() {
-    const [selectedMonth, setSelectedMonth] = useState(() => {
-        const today = new Date()
-        const month = String(today.getMonth() + 1).padStart(2, '0')
-        return `${today.getFullYear()}-${month}`
-    })
+export function MonthlyCategorySummary({ selectedMonth, onMonthChange}) {
     const [summary, setSummary] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState('')
@@ -51,7 +45,7 @@ export function MonthlyCategorySummary() {
             id="report-month"
             type="month"
             value={selectedMonth}
-            onChange={e => setSelectedMonth(e.target.value)}
+            onChange={e => onMonthChange(e.target.value)}
             />
             {isLoading && <p>Loading report...</p>}
             {error && <p role="alert">{error}</p>}

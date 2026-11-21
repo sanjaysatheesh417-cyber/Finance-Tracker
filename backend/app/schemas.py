@@ -69,3 +69,6 @@ class BudgetRead(BaseModel):
     amount: Decimal
 
     model_config = ConfigDict(from_attributes=True)
+
+class BudgetUpdate(BaseModel):
+    amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)

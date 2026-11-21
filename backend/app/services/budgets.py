@@ -33,3 +33,14 @@ def get_budgets(db: Session, year: int, month: int) -> list[models.Budget]:
         db.query(models.Budget).filter(models.Budget.year == year, models.Budget.month == month)
         .order_by(models.Budget.category_id).all()
     )
+
+def update_budget(db: Session, budget_id: int, payload: schemas.BudgetUpdate) -> models.Budget | None:
+    budget = (
+        db.query(models.Budget).filter(models.Budget.id == budget_id).first()
+    )
+    if budget is None:
+        return None
+    budget.amount = payload.amount
+    db.commit()
+    db.refresh(budget)
+    return budget

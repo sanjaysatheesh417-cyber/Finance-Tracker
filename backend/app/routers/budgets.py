@@ -36,3 +36,12 @@ def list_budgets(
     db: Session = Depends(get_db)
 ):
     return budget_service.get_budgets(db, year, month)
+
+@router.patch("/{budget_id}", response_model=schemas.BudgetRead)
+def update_budget(budget_id: int, payload: schemas.BudgetUpdate, db: Session = Depends(get_db)):
+    budget = budget_service.update_budget(db, budget_id, payload)
+
+    if budget is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Budget not found")
+
+    return budget

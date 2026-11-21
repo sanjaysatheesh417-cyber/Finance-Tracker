@@ -6,6 +6,7 @@ import {TransactionsList} from './components/TransactionList';
 import { TransactionForm } from './components/TransactionForm';
 import { CategoryForm } from './components/CategoryForm';
 import { MonthlyCategorySummary } from './components/MonthlyCategorySummary';
+import { MonthlyBudgetManager } from './components/MonthlyBudgetManager';
 
 export default function App() {
     const [transactions, setTransaction] = useState([])
@@ -21,6 +22,12 @@ export default function App() {
     const [categoryDeleteError, setCategoryDeleteError] = useState('')
     const [editingId, setEditingId] = useState(null)
     const [categories, setCategories] = useState([])
+    const [selectedMonth, setSelectedMonth] = useState(() => {
+        const today = new Date()
+        const month = String(today.getMonth() + 1).padStart(2, '0')
+        return `${today.getFullYear()}-${month}`
+    })
+    const [monthlySpending, setMonthlySpending] = useState([])
 
     useEffect(() => {
         let ignoreResult = false
@@ -165,7 +172,8 @@ export default function App() {
             <p>Expenses: {expenses}</p>
             <p>Balance: {balance}</p>
         </section>
-        <MonthlyCategorySummary/>
+        <MonthlyCategorySummary selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} onSummaryLoaded={setMonthlySpending}/>
+        <MonthlyBudgetManager categories={categories} selectedMonth={selectedMonth} spendingByCategory={monthlySpending}/>
         <select value={filterType} onChange={(e)=>setFilterType(e.target.value)}>
             <option value="all">All</option>
             <option value="debited">Expense</option>
