@@ -81,7 +81,6 @@ export function MonthlyBudgetManager({categories, selectedMonth, spendingByCateg
                 <select
                 value={categoryId}
                 onChange={e => setCategoryId(e.target.value)}
-                required
                 >
                     <option value="">Choose a category</option>
                     {categories.map(category => (
