@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from .. import models, schemas
 
-def create_category(db: Session, payload: schemas.CategoryCreate) -> models.Category:
+def create_category(db: Session, payload: schemas.CategoryCreate, user_id: int) -> models.Category:
     category = models.Category(
+        user_id = user_id,
         name = payload.name
     )
     db.add(category)
@@ -17,12 +18,12 @@ def create_category(db: Session, payload: schemas.CategoryCreate) -> models.Cate
     db.refresh(category)
     return category
 
-def get_categories(db: Session) -> list[models.Category]:
-    return (db.query(models.Category).order_by(models.Category.name).all())
+def get_categories(db: Session, user_id: int) -> list[models.Category]:
+    return (db.query(models.Category).filter(models.Category.user_id == user_id).order_by(models.Category.name).all())
 
-def delete_category(db: Session, category_id: int) -> str:
+def delete_category(db: Session, category_id: int, user_id: int) -> str:
     category = (
-        db.query(models.Category).filter(models.Category.id == category_id).first()
+        db.query(models.Category).filter(models.Category.id == category_id, models.Category.user_id == user_id,).first()
     )
 
     if category is None:
