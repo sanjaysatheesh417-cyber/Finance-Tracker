@@ -4,7 +4,7 @@ from .models import Mode
 from decimal import Decimal
 import re
 
-USERNAME_RE = re.compile(r"^[a-z0-9_.-]{3-32}$")
+USERNAME_RE = re.compile(r"^[a-z0-9_.-]{3,32}$")
 
 def clean_username(v: str) -> str:
     return v.strip().lower()
@@ -48,7 +48,7 @@ class LoginRequest(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
-    token_type: str = "before"
+    token_type: str = "bearer"
     expires_in: int
 
 class ShowUser(BaseModel):

@@ -2,12 +2,12 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from app import models, schemas
-from services import auth as service
-from core.config import settings
-from core.limiter import limiter
-from core.security import create_access_token
-from database import get_db
-from core.deps import get_current_user
+from app.services import auth as service
+from app.core.config import settings
+from app.core.limiter import limiter
+from app.core.security import create_access_token
+from app.database import get_db
+from app.core.deps import get_current_user
 
 router = APIRouter(prefix="/Auth", tags=["auth"])
 audit = logging.getLogger("audit")

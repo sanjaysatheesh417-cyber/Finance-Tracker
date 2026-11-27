@@ -9,7 +9,7 @@ class UsernameTaken(Exception):
     pass
 
 def create_user(db: Session, payload: schemas.UserCreate) -> models.User:
-    user = models.User(Username = payload.username, hashed_password = hash_password(payload.password))
+    user = models.User(username = payload.username, hashed_password = hash_password(payload.password))
     db.add(user)
     try:
         db.commit()
