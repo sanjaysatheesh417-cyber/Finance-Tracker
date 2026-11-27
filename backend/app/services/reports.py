@@ -7,6 +7,7 @@ def get_monthly_category_spending(
         db: Session,
         year: int,
         month: int,
+        user_id: int,
 ) -> list[dict]:
     start_date = date(year, month, 1)
     if month == 12:
@@ -21,8 +22,9 @@ def get_monthly_category_spending(
             func.sum(models.Transaction.amount).label("total")
         ).outerjoin(
             models.Category,
-            models.Transaction.category_id == models.Category.id
+            (models.Transaction.category_id == models.Category.id)&(models.Category.user_id == user_id),
         ).filter(
+            models.Transaction.user_id == user_id,
             models.Transaction.mode == models.Mode.debited,
             models.Transaction.transaction_date >= start_date,
             models.Transaction.transaction_date < end_date
