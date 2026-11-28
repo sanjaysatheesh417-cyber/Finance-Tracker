@@ -1,7 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app import models, schemas
-from core.security import hash_password, verify_password
+from app.core.security import hash_password, verify_password
 
 DUMMY_HASH = hash_password("dummy-password-for-timing")
 

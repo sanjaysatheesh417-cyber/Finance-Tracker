@@ -11,8 +11,8 @@ from .routers.budgets import router as budgets_router
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
-from core.limiter import limiter
-from core.logging_config import setup_logging
+from .core.limiter import limiter
+from .core.logging_config import setup_logging
 import logging
 from sqlalchemy import text
 

@@ -42,7 +42,7 @@ class Category(Base):
 
     transactions = relationship(
         "Transaction",
-        back_populates="Category"
+        back_populates="category"
     )
     user = relationship("User", back_populates="categories")
 
